@@ -7,6 +7,17 @@ export const pool = new Pool({
 
 export const initDB = async () => {
   try {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS users(
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(50),
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role VARCHAR(10) DEFAULT 'contributor' CHECK (role IN ('maintainer', 'contributor')),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+    )
+    `);
     console.log("Database Connected!!!");
   } catch (error) {
     console.log(error);
