@@ -1,4 +1,5 @@
 import { pool } from "../../db";
+import formatIssueRows from "../../utility/formatIssueRows";
 import userTable from "../../utility/userTable";
 import type { IIssues } from "./issues.interface";
 
@@ -20,6 +21,45 @@ const getAllIssuesFromDB = async (
   type?: string,
   status?: string,
 ) => {
+  const conditions: string[] = [];
+  const values: string[] = [];
+
+  const allowedSort = ["newest", "oldest"];
+  const allowedTypes = ["bug", "feature_request"];
+  const allowedStatus = ["open", "in_progress", "resolved"];
+
+  if (type && allowedTypes.includes(type)) {
+    values.push(type);
+    conditions.push(`type = $${values.length}`);
+  }
+
+  if (status && allowedStatus.includes(status)) {
+    values.push(status);
+    conditions.push(`status = $${values.length}`);
+  }
+
+  let query = "SELECT * FROM issues";
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+
+  if (sort && allowedSort.includes(sort)) {
+    if (sort === "newest") {
+      query += " ORDER BY created_at DESC";
+    } else if (sort === "oldest") {
+      query += " ORDER BY created_at ASC";
+    }
+  } else {
+    query += " ORDER BY created_at DESC";
+  }
+  const result = await pool.query(query, values);
+
+  if (result.rowCount !== 0) {
+    const allUsersData = await userTable();
+    result.rows = formatIssueRows(result.rows, allUsersData);
+  }
+
+  return result;
 };
 
 const getSingleIssueFromDB = async (id: string) => {
@@ -33,17 +73,7 @@ const getSingleIssueFromDB = async (id: string) => {
   if (result.rowCount !== 0) {
     const allUsersData = await userTable();
 
-    const created_at = result.rows[0].created_at;
-    const updated_at = result.rows[0].updated_at;
-    delete result.rows[0].created_at;
-    delete result.rows[0].updated_at;
-
-    result.rows[0]["reporter"] =
-      allUsersData[result.rows[0].reporter_id as string];
-    result.rows[0].created_at = created_at;
-    result.rows[0].updated_at = updated_at;
-
-    delete result.rows[0].reporter_id;
+    result.rows = formatIssueRows(result.rows, allUsersData);
   }
 
   return result;

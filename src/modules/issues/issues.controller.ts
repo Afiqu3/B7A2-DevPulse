@@ -29,15 +29,15 @@ const getAllIssues = async (req: Request, res: Response) => {
   const { sort, type, status } = req.query;
   try {
     const result = await issuesService.getAllIssuesFromDB(
-      sort as string,
-      type as string,
-      status as string,
+      typeof sort === "string" ? sort : undefined,
+      typeof type === "string" ? type : undefined,
+      typeof status === "string" ? status : undefined,
     );
 
     sendResponse(res, {
       statusCode: 200,
       success: true,
-      data: result,
+      data: result.rows,
     });
   } catch (error: any) {
     sendResponse(res, {
