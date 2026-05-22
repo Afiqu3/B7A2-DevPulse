@@ -6,12 +6,18 @@ import express, {
 import { authRouter } from "./modules/auth/auth.route";
 import globalErrorHandler from "./middlewares/globalErrorHandler";
 import { issuesRouter } from "./modules/issues/issues.route";
+import cors from "cors";
 
 const app: Application = express();
 
 app.use(express.json());
 app.use(express.text());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: "*",
+  }),
+);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({

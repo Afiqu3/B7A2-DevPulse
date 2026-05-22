@@ -79,6 +79,19 @@ const getSingleIssueFromDB = async (id: string) => {
   return result;
 };
 
+const updateIssueIntoDB = async (id: string, payload: Partial<IIssues>) => {
+    const { title, description, type } = payload;
+
+    const result = await pool.query(
+        `
+        UPDATE issues SET title=COALESCE($1, title), description=COALESCE($2, description), type=COALESCE($3, type) WHERE id=$4 RETURNING *
+        `,
+        [title, description, type, id]
+    );
+
+    return result;
+};
+
 const deleteIssueFromDB = async (id: string) => {
   const result = await pool.query(
     `
@@ -93,5 +106,6 @@ export const issuesService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
+  updateIssueIntoDB,
   deleteIssueFromDB,
 };
