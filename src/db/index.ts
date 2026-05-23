@@ -31,6 +31,28 @@ export const initDB = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
     )
     `);
+
+    await pool.query(`
+        CREATE OR REPLACE FUNCTION set_updated_at()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        DROP TRIGGER IF EXISTS users_set_updated_at ON users;
+        CREATE TRIGGER users_set_updated_at
+        BEFORE UPDATE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION set_updated_at();
+
+        DROP TRIGGER IF EXISTS issues_set_updated_at ON issues;
+        CREATE TRIGGER issues_set_updated_at
+        BEFORE UPDATE ON issues
+        FOR EACH ROW
+        EXECUTE FUNCTION set_updated_at();
+    `);
     // console.log("Database Connected!!!");
   } catch (error) {
     console.log(error);
