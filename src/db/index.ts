@@ -31,7 +31,7 @@ export const initDB = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
     )
     `);
-    console.log("Database Connected!!!");
+    // console.log("Database Connected!!!");
   } catch (error) {
     console.log(error);
   }

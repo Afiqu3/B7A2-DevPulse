@@ -1,4 +1,5 @@
 import { pool } from "../../db";
+import type { ALLOWED_SORT, ALLOWED_STATUS, ALLOWED_TYPES } from "../../types";
 import formatIssueRows from "../../utility/formatIssueRows";
 import userTable from "../../utility/userTable";
 import type { IIssues } from "./issues.interface";
@@ -24,16 +25,16 @@ const getAllIssuesFromDB = async (
   const conditions: string[] = [];
   const values: string[] = [];
 
-  const allowedSort = ["newest", "oldest"];
-  const allowedTypes = ["bug", "feature_request"];
-  const allowedStatus = ["open", "in_progress", "resolved"];
+  const allowedSort: ALLOWED_SORT[] = ["newest", "oldest"];
+  const allowedTypes: ALLOWED_TYPES[] = ["bug", "feature_request"];
+  const allowedStatus: ALLOWED_STATUS[] = ["open", "in_progress", "resolved"];
 
-  if (type && allowedTypes.includes(type)) {
+  if (type && allowedTypes.includes(type as ALLOWED_TYPES)) {
     values.push(type);
     conditions.push(`type = $${values.length}`);
   }
 
-  if (status && allowedStatus.includes(status)) {
+  if (status && allowedStatus.includes(status as ALLOWED_STATUS)) {
     values.push(status);
     conditions.push(`status = $${values.length}`);
   }
@@ -43,7 +44,7 @@ const getAllIssuesFromDB = async (
     query += " WHERE " + conditions.join(" AND ");
   }
 
-  if (sort && allowedSort.includes(sort)) {
+  if (sort && allowedSort.includes(sort as ALLOWED_SORT)) {
     if (sort === "newest") {
       query += " ORDER BY created_at DESC";
     } else if (sort === "oldest") {
